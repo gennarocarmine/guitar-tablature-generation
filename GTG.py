@@ -2,8 +2,6 @@
 import random
 from music21 import *
 
-# --- 1. CONFIGURATION ---
-
 # Standard Guitar Tuning: E2, A2, D3, G3, B3, e4
 TUNING = [40, 45, 50, 55, 59, 64] 
 NUM_STRINGS = 6
@@ -22,7 +20,6 @@ NOTE_DURATIONS = [0.5, 1.0]
 # 0=C, 2=D, 4=E, 5=F, 7=G, 9=A, 11=B
 SCALE_C_MAJOR = [0, 2, 4, 5, 7, 9, 11]
 
-# --- 2. GENERATION ---
 
 def generate_random_gene():
     """Generates a random position (String Index, Fret Number)."""
@@ -34,7 +31,6 @@ def generate_individual():
     """Creates a complete random melody (a list of genes)."""
     return [generate_random_gene() for _ in range(MELODY_LENGTH)]
 
-# --- 3. FITNESS FUNCTION (Musicality + Technique) ---
 
 def get_note_midi(string_idx, fret):
     """Calculates the MIDI note value based on string and fret."""
@@ -56,7 +52,7 @@ def fitness_function(chromosome):
         current_midi = midi_notes[i]
         string_idx, fret = chromosome[i]
         
-        # --- CRITERION 1: MUSICALITY (Harmony) ---
+        # Criterion 1: Musicality (Harmony)
         # Get the pitch class (0-11)
         chroma = current_midi % 12 
         
@@ -69,7 +65,7 @@ def fitness_function(chromosome):
         else:
             score -= 50  # Severe Penalty: Note is out of key (dissonant)
 
-        # --- CRITERION 2: TECHNIQUE (Playability) ---
+        # Criterion 2: Technique (Playability)
         if i > 0:
             prev_string, prev_fret = chromosome[i-1]
             prev_midi = midi_notes[i-1]
@@ -81,7 +77,7 @@ def fitness_function(chromosome):
             # Penalize large physical jumps for the hand
             score -= (fret_dist * 2) + (string_dist * 5)
             
-            # --- CRITERION 3: MELODY (Intervals) ---
+            # Criterion 3: Melody (Intervals)
             # Penalize pitch jumps larger than an octave (12 semitones)
             interval = abs(current_midi - prev_midi)
             if interval > 12: 
@@ -95,8 +91,6 @@ def fitness_function(chromosome):
         score += 30
 
     return score
-
-# --- 4. GENETIC ALGORITHM CORE ---
 
 def crossover(p1, p2):
     """Single-point crossover: combines two parents to make a child."""
@@ -127,7 +121,7 @@ def genetic_algorithm():
         # Selection (Select top 30%)
         top_performers = [x[0] for x in scored_pop[:int(POPULATION_SIZE * 0.3)]]
         
-        # --- NEW GENERATION ---
+        # New generation
         new_pop = []
         
         # Elitism: Automatically keep the absolute best solution from previous gen
@@ -143,8 +137,6 @@ def genetic_algorithm():
         population = new_pop
         
     return max(population, key=fitness_function)
-
-# --- 5. VISUALIZATION AND PLAYBACK ---
 
 def play_and_show(chromosome):
     s = stream.Score()
